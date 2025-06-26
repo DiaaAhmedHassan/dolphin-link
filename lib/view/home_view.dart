@@ -1,5 +1,7 @@
 import 'package:dolphin_link/view_model/home_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 
 class HomeView extends StatefulWidget {
    const HomeView({super.key});
@@ -10,8 +12,14 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final HomeViewModel homeViewModel = HomeViewModel();
-
-
+  Future<bool> isPhishingUrl(String url) async{
+    final response = await Gemini.instance.prompt(parts: [
+      Part.text('${dotenv.env['phishing_prompt']!}$url'),
+    ]);
+    final result = response?.output?.toLowerCase().trim();
+    print("AI response: $result");
+    return result == 'Phishing';
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +53,11 @@ class _HomeViewState extends State<HomeView> {
                      child: MaterialButton(
                        padding: const EdgeInsets.all(10),
                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                       onPressed: (){}, 
+                       onPressed: () async{
+                        bool result = await isPhishingUrl("https://www.chiefarchitect.com/");
+                        print(result);
+                          
+                       }, 
                        color:const Color.fromRGBO(0, 168, 240, 100),
                        textColor: Colors.white,
                        child:const Text("Check", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),

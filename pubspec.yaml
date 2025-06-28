@@ -38,6 +38,10 @@ dependencies:
   flutter_gemini: ^3.0.0
   flutter_dotenv: ^5.2.1
   http: ^1.4.0
+  connectivity_plus: ^6.1.4
+  flutter_launcher_icons: ^0.14.4
+
+
 
 dev_dependencies:
   flutter_test:
@@ -54,6 +58,11 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "images/dolphinlink.png"
+
 flutter:
 
   # The following line ensures that the Material Icons font is

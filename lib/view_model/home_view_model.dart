@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolphin_link/model/groq_api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -52,11 +53,14 @@ class HomeViewModel extends ChangeNotifier{
       .trim();
   }
 
-  checkPress(String url) async {
+  checkPress(BuildContext context, String url) async {
     String escapedUrl = escapeForPrompt(url);
     print(escapedUrl);
     final response = await groqApiClient.chatCompletions(escapedUrl);
-    
+    if(response.statusCode != 200){
+      ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Error happend while geting the response"), duration: Duration(milliseconds: 500),));
+    }
     var body = response.body;
 
     content = extractCharacteristics(body);
@@ -83,4 +87,8 @@ class HomeViewModel extends ChangeNotifier{
     urlController.text = "";
     isVisible = false;
   }
+Future<bool> isConnectedToInternet()async{
+  final results =await  Connectivity().checkConnectivity();
+  return !results.contains(ConnectivityResult.none);
+}
 }

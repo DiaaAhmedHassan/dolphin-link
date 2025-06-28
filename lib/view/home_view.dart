@@ -73,6 +73,24 @@ class _HomeViewState extends State<HomeView> {
                       borderRadius: BorderRadius.circular(10)),
                   onPressed: homeViewModel.isloading?null:
                    () async {
+                    if(!await homeViewModel.isConnectedToInternet()){
+                      debugPrint("No internet connection");
+                      showDialog(context: context, builder: (_) => AlertDialog(
+                        title: const Text("No internet connection"),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                          Image.asset("images/no_internet.png", width: 150, height: 150,),
+                          const Text("Please check you'r internet connection")
+                        ],),
+                        actions: [
+                          MaterialButton(onPressed: (){
+                            Navigator.pop(context);
+                          }, child: const Text("Ok"),)
+                        ],
+                      ));
+                      return ;
+                    }
                     //phishing: http://beta.kenaidanceta.com/postamok/d39a2/source
                     //lig: https://blog.hubspot.com/marketing/email-open-click-rate-benchmark
                     if(homeViewModel.homeKey.currentState!.validate()){
@@ -80,7 +98,7 @@ class _HomeViewState extends State<HomeView> {
                         homeViewModel.isloading = true;
                       });
                     await homeViewModel
-                        .checkPress(homeViewModel.urlController.text);
+                        .checkPress(context , homeViewModel.urlController.text);
                     setState(() {
                       homeViewModel.isloading = false;
                     });}
@@ -100,6 +118,7 @@ class _HomeViewState extends State<HomeView> {
                     height: double.maxFinite,
                     child: Column(
                       children: [
+
                         Card(
                           child: ListTile(
                             leading: Icon(

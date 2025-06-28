@@ -12,8 +12,11 @@ class HomeViewModel extends ChangeNotifier{
   TextEditingController urlController = TextEditingController();
   bool isVisible = false;
   bool isItPhishing = false;
+  bool isloading = false;
   double percentage = 0.0;
   String reason = "";
+
+  GlobalKey<FormState> homeKey = GlobalKey();
 
 
 
@@ -38,8 +41,22 @@ class HomeViewModel extends ChangeNotifier{
     return result;
   }
 
+  String escapeForPrompt(String url){
+    return url.replaceAll('"', r'\"')
+      .replaceAll('{', '')
+      .replaceAll('}', '')
+      .replaceAll('\n', ' ')
+      .replaceAll('\r', '')
+      .replaceAll('\$', r'\$')
+      .replaceAll(" ", "/")
+      .trim();
+  }
+
   checkPress(String url) async {
-    final response = await groqApiClient.chatCompletions(url);
+    String escapedUrl = escapeForPrompt(url);
+    print(escapedUrl);
+    final response = await groqApiClient.chatCompletions(escapedUrl);
+    
     var body = response.body;
 
     content = extractCharacteristics(body);
@@ -51,6 +68,19 @@ class HomeViewModel extends ChangeNotifier{
     print(reason);
     // print(body);
     //print(result);
+    
     isVisible = true;
+  }
+
+  String? isUrlValid(val) {
+    if (val == "") {
+      return "No url provided";
+    }
+    return null;
+  }
+
+  void clearText(){
+    urlController.text = "";
+    isVisible = false;
   }
 }

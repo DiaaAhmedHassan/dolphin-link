@@ -6,9 +6,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HomeViewModel extends ChangeNotifier{
+  
   static const String homeTitle = "Dolphin link";
   static const String dolphinLinkLogo = "images/dolphinlink.png";
   static const String urlLabel = "Enter URL here";
+  static const String checkButtonText = "check";
+  static const String secureLabel = "Is it secure";
+  static const String percentageLabel = "Risk percentage";
+  static const String reasonLabel = "Reason";
+  static const String yes = "Yes";
+  static const String no = "No";
+  static const String ok = "ok";
+  static const String logoPath = "images/dolphinlink.png";
+  static const String noConnectionPath = "images/no_internet.png";
+  static const String noConnectionTitle = "No internet connection";
+  static const String checkConnection = "Please check you'r internet connection";
+  static const String timeoutText = "Timeout: Server didn't respond in time!";
+
+
 
   TextEditingController urlController = TextEditingController();
   bool isVisible = false;
@@ -55,11 +70,12 @@ class HomeViewModel extends ChangeNotifier{
 
   checkPress(BuildContext context, String url) async {
     String escapedUrl = escapeForPrompt(url);
-    print(escapedUrl);
-    final response = await groqApiClient.chatCompletions(escapedUrl);
+    debugPrint(escapedUrl);
+    final response = await groqApiClient.chatCompletions(escapedUrl).timeout(const Duration(seconds: 15), 
+    onTimeout: ()=>throw Exception("Time out: Server didn't respond in time. "));
     if(response.statusCode != 200){
       ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error happend while geting the response"), duration: Duration(milliseconds: 500),));
+      const SnackBar(content: Text("Error happened while getting the response"), duration: Duration(milliseconds: 500),));
     }
     var body = response.body;
 
@@ -67,9 +83,9 @@ class HomeViewModel extends ChangeNotifier{
     isItPhishing = content['phishing'];
     percentage = content['risk']*100.0;
     reason = content['reason'];
-    print(isItPhishing);
-    print(percentage);
-    print(reason);
+    debugPrint('$isItPhishing');
+    debugPrint('$percentage');
+    debugPrint(reason);
     // print(body);
     //print(result);
     

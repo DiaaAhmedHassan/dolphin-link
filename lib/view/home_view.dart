@@ -24,186 +24,216 @@ class _HomeViewState extends State<HomeView> {
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Form(
-            key: homeViewModel.homeKey,
+              key: homeViewModel.homeKey,
               child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                HomeViewModel.dolphinLinkLogo,
-                width: 250,
-                height: 250,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                validator:homeViewModel.isUrlValid,
-                controller: homeViewModel.urlController,
-                cursorColor: Colors.blue,
-                
-                decoration: InputDecoration(
-                  enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
-                  labelStyle: const TextStyle(color: Colors.blue),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blue), 
-                    borderRadius: BorderRadius.circular(10)
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    HomeViewModel.dolphinLinkLogo,
+                    width: 250,
+                    height: 250,
                   ),
-                  suffixIcon: IconButton(onPressed: (){
-                    setState(() {
-                      homeViewModel.clearText();
-                    });
-                  }, icon: const Icon(Icons.close, color: Colors.blue,)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide:const BorderSide(color: Colors.blue)
+                  const SizedBox(
+                    height: 10,
                   ),
-                  
-                  contentPadding: const EdgeInsets.all(5),
-                  label: const Text(HomeViewModel.urlLabel),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 20),
-                width: double.infinity,
-                child: MaterialButton(
-                  disabledColor: Colors.blue[200],
-                  
-                  padding: const EdgeInsets.all(10),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  onPressed: homeViewModel.isloading?null:
-                   () async {
-                    if(!await homeViewModel.isConnectedToInternet()){
-                      debugPrint("No internet connection");
-                      showDialog(context: context, builder: (_) => AlertDialog(
-                        title: const Text("No internet connection"),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                          Image.asset("images/no_internet.png", width: 150, height: 150,),
-                          const Text("Please check you'r internet connection")
-                        ],),
-                        actions: [
-                          MaterialButton(onPressed: (){
-                            Navigator.pop(context);
-                          }, child: const Text("Ok"),)
-                        ],
-                      ));
-                      return ;
-                    }
-                    //phishing: http://beta.kenaidanceta.com/postamok/d39a2/source
-                    //lig: https://blog.hubspot.com/marketing/email-open-click-rate-benchmark
-                    if(homeViewModel.homeKey.currentState!.validate()){
-                      setState(() {
-                        homeViewModel.isloading = true;
-                      });
-                    await homeViewModel
-                        .checkPress(context , homeViewModel.urlController.text);
-                    setState(() {
-                      homeViewModel.isloading = false;
-                    });}
-                  },
-                  color: Colors.blue,
-                  textColor: Colors.white,
-                  child: homeViewModel.isloading?const CircularProgressIndicator(color: Colors.white,): const Text(
-                    "Check",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  TextFormField(
+                    validator: homeViewModel.isUrlValid,
+                    controller: homeViewModel.urlController,
+                    cursorColor: Colors.blue,
+                    decoration: InputDecoration(
+                      enabledBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue)),
+                      labelStyle: const TextStyle(color: Colors.blue),
+                      focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color: Colors.blue),
+                          borderRadius: BorderRadius.circular(10)),
+                      suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              homeViewModel.clearText();
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.blue,
+                          )),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.blue)),
+                      contentPadding: const EdgeInsets.all(5),
+                      label: const Text(HomeViewModel.urlLabel),
+                    ),
                   ),
-                ),
-              ),
-              Visibility(
-                visible: homeViewModel.isVisible,
-                child: Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    height: double.maxFinite,
-                    child: Column(
-                      children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    width: double.infinity,
+                    child: MaterialButton(
+                      disabledColor: Colors.blue[200],
+                      padding: const EdgeInsets.all(10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      onPressed: homeViewModel.isloading
+                          ? null
+                          : () async {
+                              if (!await homeViewModel.isConnectedToInternet()) {
 
-                        Card(
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.security,
-                              color: homeViewModel.isItPhishing
-                                  ? Colors.red
-                                  : Colors.green,
-                              size: 35,
-                            ),
-                            title: const Text(
-                              "Is it secure",
+                                if(!context.mounted) return;
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                          title: const Text(
+                                              HomeViewModel.noConnectionTitle),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Image.asset(
+                                                HomeViewModel.noConnectionPath,
+                                                width: 150,
+                                                height: 150,
+                                              ),
+                                              const Text(
+                                                  HomeViewModel.checkConnection)
+                                            ],
+                                          ),
+                                          actions: [
+                                            MaterialButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child:
+                                                  const Text(HomeViewModel.ok),
+                                            )
+                                          ],
+                                        ));
+                                return;
+                              }
+                              //phishing: http://beta.kenaidanceta.com/postamok/d39a2/source
+                              //lig: https://blog.hubspot.com/marketing/email-open-click-rate-benchmark
+                              if (homeViewModel.homeKey.currentState!.validate()) {
+                                setState(() {
+                                  homeViewModel.isloading = true;
+                                });
+
+                                try {
+                                  if(!context.mounted) return;
+                                  await homeViewModel.checkPress(context,homeViewModel.urlController.text);
+                                } on Exception catch (e) {
+                                  debugPrint("$e");
+                                  if(! context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text(HomeViewModel.timeoutText), duration: Duration(milliseconds: 500),)
+                                  );
+                                }
+                                setState(() {
+                                  homeViewModel.isloading = false;
+                                });
+                              }
+                            },
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      child: homeViewModel.isloading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : const Text(
+                              HomeViewModel.checkButtonText,
                               style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
+                                  fontWeight: FontWeight.bold, fontSize: 20),
                             ),
-                            subtitle: Text(
-                              homeViewModel.isItPhishing == true ? "No" : "Yes",
-                              style: TextStyle(
+                    ),
+                  ),
+                  Visibility(
+                    visible: homeViewModel.isVisible,
+                    child: Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        height: double.maxFinite,
+                        child: Column(
+                          children: [
+                            Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.security,
                                   color: homeViewModel.isItPhishing
                                       ? Colors.red
                                       : Colors.green,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold),
+                                  size: 35,
+                                ),
+                                title: const Text(
+                                  HomeViewModel.secureLabel,
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  homeViewModel.isItPhishing == true
+                                      ? HomeViewModel.no
+                                      : HomeViewModel.yes,
+                                  style: TextStyle(
+                                      color: homeViewModel.isItPhishing
+                                          ? Colors.red
+                                          : Colors.green,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        Card(
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.percent,
-                              color: homeViewModel.isItPhishing
-                                  ? Colors.red
-                                  : Colors.green,
-                              size: 35,
-                            ),
-                            title: const Text(
-                              "Risk percentage",
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              "${homeViewModel.percentage}%",
-                              style: TextStyle(
+                            Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.percent,
                                   color: homeViewModel.isItPhishing
                                       ? Colors.red
                                       : Colors.green,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold),
+                                  size: 35,
+                                ),
+                                title: const Text(
+                                  HomeViewModel.percentageLabel,
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  "${homeViewModel.percentage}%",
+                                  style: TextStyle(
+                                      color: homeViewModel.isItPhishing
+                                          ? Colors.red
+                                          : Colors.green,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        Card(
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.question_mark,
-                              color: homeViewModel.isItPhishing
-                                  ? Colors.red
-                                  : Colors.green,
-                              size: 35,
+                            Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.question_mark,
+                                  color: homeViewModel.isItPhishing
+                                      ? Colors.red
+                                      : Colors.green,
+                                  size: 35,
+                                ),
+                                title: const Text(
+                                  HomeViewModel.reasonLabel,
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  homeViewModel.reason,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
                             ),
-                            title: const Text(
-                              "Reason",
-                              style: TextStyle(
-                                  fontSize: 24,
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Text(
-                              homeViewModel.reason,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )),
-              )
-            ],
-          )),
+                          ],
+                        )),
+                  )
+                ],
+              )),
         ),
       ),
     );
   }
-
-
 }

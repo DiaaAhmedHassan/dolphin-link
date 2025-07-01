@@ -25,7 +25,10 @@ class HomeViewModel{
   String reason = "";
   static String currentLang = 'english';
 
-
+  static Map<String, String> supportedLanguage = {
+    'english': 'english',
+    'العربية': 'arabic'
+  };
   GlobalKey<FormState> homeKey = GlobalKey();
 
   Localization localization = Localization();
@@ -66,10 +69,13 @@ class HomeViewModel{
   checkPress(BuildContext context, String url) async {
     String escapedUrl = escapeForPrompt(url);
     debugPrint(escapedUrl);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    currentLang = prefs.getString('lang')??'english';
     bool appInArabic = currentLang == 'العربية';
 
     String translationPrompt = dotenv.env['translation_prompt']!;
-    String sentText = !appInArabic?escapedUrl:'$translationPrompt $currentLang $escapedUrl';
+    String sentText = !appInArabic?escapedUrl:'$translationPrompt ${supportedLanguage[currentLang]} ${dotenv.env['phishing_prompt']} $escapedUrl';
+    debugPrint("Sent text: $sentText");
     final response = await groqApiClient.chatCompletions(sentText).timeout(const Duration(seconds: 15), 
     onTimeout: ()=>throw Exception("Time out: Server didn't respond in time. "));
     if(response.statusCode != 200){
@@ -107,10 +113,12 @@ class HomeViewModel{
 Future<bool> isConnectedToInternet()async{
   final results =await  Connectivity().checkConnectivity();
   return !results.contains(ConnectivityResult.none);
+  
 }
 
 static Future<void> changeLang(String val)async{
   // currentLang = val;
+
   debugPrint('changed to: $currentLang');
   try{
   final prefs = await SharedPreferences.getInstance();
@@ -120,8 +128,13 @@ static Future<void> changeLang(String val)async{
   }
 }
 
-static Future<void> getCurrentLang() async{
+void onLanguageChanged(){
+  isVisible = false;
+  urlController.text = "";
+}
 
+static Future<void> getCurrentLang() async{
+  
   try{
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   debugPrint('app language: ${prefs.getString('lang')??'english'}');

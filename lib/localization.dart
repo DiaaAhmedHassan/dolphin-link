@@ -32,6 +32,8 @@ final Map<String, dynamic> langs = {
       'noUrlProvided': 'لم يتم ادحال اي رابط',
       'responseError': "حدث خطأ اثناء استجابة الخادم",
       'time': 'انتنهى الوقت: لم يستجيب الخادم في الوقت المحدد'
-    }
+    },
+
+    
   };
 }

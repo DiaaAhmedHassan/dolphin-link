@@ -1,27 +1,19 @@
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dolphin_link/localization.dart';
 import 'package:dolphin_link/model/groq_api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeViewModel extends ChangeNotifier{
+class HomeViewModel{
   
-  static const String homeTitle = "Dolphin link";
   static const String dolphinLinkLogo = "images/dolphinlink.png";
-  static const String urlLabel = "Enter URL here";
-  static const String checkButtonText = "check";
-  static const String secureLabel = "Is it secure";
-  static const String percentageLabel = "Risk percentage";
-  static const String reasonLabel = "Reason";
-  static const String yes = "Yes";
-  static const String no = "No";
-  static const String ok = "ok";
+
   static const String logoPath = "images/dolphinlink.png";
   static const String noConnectionPath = "images/no_internet.png";
-  static const String noConnectionTitle = "No internet connection";
-  static const String checkConnection = "Please check you'r internet connection";
-  static const String timeoutText = "Timeout: Server didn't respond in time!";
+ 
 
 
 
@@ -31,12 +23,15 @@ class HomeViewModel extends ChangeNotifier{
   bool isloading = false;
   double percentage = 0.0;
   String reason = "";
+  static String currentLang = 'english';
+
 
   GlobalKey<FormState> homeKey = GlobalKey();
 
-
+  Localization localization = Localization();
 
   Map<String, dynamic> content = {};
+
 
   //use groq
   final groqApiClient = GroqApiClient(dotenv.env['AI_API_KEY']!);
@@ -71,11 +66,16 @@ class HomeViewModel extends ChangeNotifier{
   checkPress(BuildContext context, String url) async {
     String escapedUrl = escapeForPrompt(url);
     debugPrint(escapedUrl);
-    final response = await groqApiClient.chatCompletions(escapedUrl).timeout(const Duration(seconds: 15), 
+    bool appInArabic = currentLang == 'العربية';
+
+    String translationPrompt = dotenv.env['translation_prompt']!;
+    String sentText = !appInArabic?escapedUrl:'$translationPrompt $currentLang $escapedUrl';
+    final response = await groqApiClient.chatCompletions(sentText).timeout(const Duration(seconds: 15), 
     onTimeout: ()=>throw Exception("Time out: Server didn't respond in time. "));
     if(response.statusCode != 200){
+      if(context.mounted){
       ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error happened while getting the response"), duration: Duration(milliseconds: 500),));
+      const SnackBar(content: Text("Error happened while getting the response"), duration: Duration(milliseconds: 500),));}
     }
     var body = response.body;
 
@@ -94,7 +94,7 @@ class HomeViewModel extends ChangeNotifier{
 
   String? isUrlValid(val) {
     if (val == "") {
-      return "No url provided";
+      return localization.langs[currentLang]['noUrlProvided'];
     }
     return null;
   }
@@ -102,9 +102,36 @@ class HomeViewModel extends ChangeNotifier{
   void clearText(){
     urlController.text = "";
     isVisible = false;
+
   }
 Future<bool> isConnectedToInternet()async{
   final results =await  Connectivity().checkConnectivity();
   return !results.contains(ConnectivityResult.none);
 }
+
+static Future<void> changeLang(String val)async{
+  // currentLang = val;
+  debugPrint('changed to: $currentLang');
+  try{
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString('lang', val);
+  }catch (e){
+    debugPrint("Error saving the language");
+  }
+}
+
+static Future<void> getCurrentLang() async{
+
+  try{
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  debugPrint('app language: ${prefs.getString('lang')??'english'}');
+  currentLang = prefs.getString('lang')??'english';
+  debugPrint("the current language is: $currentLang");
+  }catch(e){
+    debugPrint("Error loading language");
+  }
+}
+
+
+
 }

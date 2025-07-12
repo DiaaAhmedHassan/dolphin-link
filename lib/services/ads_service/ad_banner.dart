@@ -19,20 +19,20 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   void initState() {
     super.initState();
 
-    // _bannerAdd = BannerAd(
-    //   adUnitId: dotenv.env['ad_unit_key']!,
-    //   request: const AdRequest(),
-    //    size: AdSize.banner, 
-    //    listener: BannerAdListener(
-    //     onAdLoaded: (_) => setState(() => _isAdLoaded = true),
-    //     onAdFailedToLoad: (ad, error){
-    //       debugPrint("Ad failed to load");
-    //       ad.dispose();
-    //     }
-    //    ),
-    // );
+    _bannerAdd = BannerAd(
+      adUnitId: dotenv.env['ad_unit_key']!,
+      request: const AdRequest(),
+       size: AdSize.banner, 
+       listener: BannerAdListener(
+        onAdLoaded: (_) => setState(() => _isAdLoaded = true),
+        onAdFailedToLoad: (ad, error){
+          debugPrint("Ad failed to load");
+          ad.dispose();
+        }
+       ),
+    );
 
-    // _bannerAdd.load();
+    _bannerAdd.load();
   }
   
   @override

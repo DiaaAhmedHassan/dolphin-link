@@ -1,5 +1,6 @@
 
 
+import 'package:dolphin_link/services/navigation_service/navigation_services.dart';
 import 'package:dolphin_link/view/home_view.dart';
 import 'package:dolphin_link/view_model/home_view_model.dart';
 import 'package:flutter/material.dart';
@@ -11,19 +12,21 @@ Future<void> main()  async{
   await dotenv.load();
   await HomeViewModel.getCurrentLang();
   MobileAds.instance.initialize();
-  runApp(const MyApp());
+  runApp( MyApp());
 }
 
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   MyApp({super.key});
 
   // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
-    return  const MaterialApp(
+    return   MaterialApp(
       debugShowCheckedModeBanner: false,  
-      home: HomeView(),
+      navigatorKey: NavigationServices.navigatorKey,
+      home:  HomeView(),
     );
   }
 }

@@ -1,10 +1,12 @@
-import 'package:dolphin_link/ads_service/ad_banner.dart';
+import 'package:dolphin_link/services/ads_service/ad_banner.dart';
 import 'package:dolphin_link/localization.dart';
 import 'package:dolphin_link/view_model/home_view_model.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  const HomeView( {super.key, this.url});
+
+  final String? url;
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -16,6 +18,13 @@ class _HomeViewState extends State<HomeView> {
   // final LangRepo langRepo = LangRepo();
   // String currentLang = LangRepo().currentLang;
   String currentLang = HomeViewModel.currentLang;
+  var langs = Localization().langs.keys.toList();
+
+  @override
+  void initState() {
+    super.initState();
+    homeViewModel.urlController.text = widget.url??"";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,52 +38,64 @@ class _HomeViewState extends State<HomeView> {
           titleTextStyle: const TextStyle(
               color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30),
           actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: DropdownButton<String>(
+            IconButton(
+                onPressed: () => homeViewModel.scanQr(context, homeViewModel),
+                icon: const Icon(
+                  Icons.qr_code,
+                  size: 30,
+                  color: Colors.white,
+                )),
+            IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (val) {
+                        return AlertDialog(
+                            title: const Text("Language", textAlign: TextAlign.center,),
+                            content: SizedBox(
+                              height: 200,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    for (final lang in langs)
+                                      MaterialButton(
+                                        onPressed: () {
+                                          currentLang = lang;
+                                          HomeViewModel.changeLang(lang);
+                                          setState(() {
+                                            homeViewModel.onLanguageChanged();
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text(lang),
+                                      )
+                                  ],
+                                ),
+                              ),
+                            
+                            ),
+                            actions: [
+                              MaterialButton(onPressed: (){Navigator.pop(context);}, child: const Text("Cancel"),)
+                            ],
+                            );
+                      });
+
+                  ///This is the code of changing the language
+                  //**************************************** */
+
+                  //*************************************** */
+                },
                 icon: const Icon(
                   Icons.language,
+                  size: 30,
                   color: Colors.white,
-                ),
-                dropdownColor: Colors.white,
-                isDense: true,
-                value: currentLang, // Should be a String? (nullable)
-                items: ['english', 'العربية']
-                    .map<DropdownMenuItem<String>>((String val) {
-                  return DropdownMenuItem<String>(
-                    value: val,
-                    child: Text(
-                      val ,
-                      style: const TextStyle(color: Colors.black, fontSize: 18),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (val) async {
-                  currentLang = val!;
-                  await HomeViewModel.changeLang(val);
-                  setState(() {
-                    homeViewModel.onLanguageChanged();
-                  });
-                },
-                selectedItemBuilder: (BuildContext context) {
-                  return ['english', 'العربية'].map((String val) {
-                    return Text(
-                      val,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18), // selected item = white
-                    );
-                  }).toList();
-                },
-              ),
-            )
+                )),
           ],
         ),
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: Form(
-              
                 key: homeViewModel.homeKey,
                 child: Container(
                   child: Column(
@@ -135,9 +156,9 @@ class _HomeViewState extends State<HomeView> {
                                     showDialog(
                                         context: context,
                                         builder: (_) => AlertDialog(
-                                              title: Text(
-                                                  localization.langs[currentLang]
-                                                      ['noConnection']),
+                                              title: Text(localization
+                                                      .langs[currentLang]
+                                                  ['noConnection']),
                                               content: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
@@ -158,7 +179,8 @@ class _HomeViewState extends State<HomeView> {
                                                     Navigator.pop(context);
                                                   },
                                                   child: Text(localization
-                                                      .langs[currentLang]['ok']),
+                                                          .langs[currentLang]
+                                                      ['ok']),
                                                 )
                                               ],
                                             ));
@@ -171,7 +193,7 @@ class _HomeViewState extends State<HomeView> {
                                     setState(() {
                                       homeViewModel.isloading = true;
                                     });
-                  
+
                                     try {
                                       if (!context.mounted) return;
                                       await homeViewModel.checkPress(context,
@@ -201,7 +223,8 @@ class _HomeViewState extends State<HomeView> {
                               : Text(
                                   localization.langs[currentLang]['check'],
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 20),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20),
                                 ),
                         ),
                       ),
@@ -212,29 +235,37 @@ class _HomeViewState extends State<HomeView> {
                             child: Column(
                               children: [
                                 CustomCard(
-                                  currentLang: currentLang, 
-                                  label: localization.langs[currentLang]['isItSecure'], 
-                                  text: homeViewModel.isItPhishing? localization.langs[currentLang]['no']: localization.langs[currentLang]['yes'], 
+                                  currentLang: currentLang,
+                                  label: localization.langs[currentLang]
+                                      ['isItSecure'],
+                                  text: homeViewModel.isItPhishing
+                                      ? localization.langs[currentLang]['no']
+                                      : localization.langs[currentLang]['yes'],
                                   icon: Icons.security,
-                                  isItPhishing: homeViewModel.isItPhishing,),
+                                  isItPhishing: homeViewModel.isItPhishing,
+                                ),
                                 CustomCard(
                                   currentLang: currentLang,
-                                  label: localization.langs[currentLang]['riskPercentage'],
+                                  label: localization.langs[currentLang]
+                                      ['riskPercentage'],
                                   text: '${homeViewModel.percentage}%',
                                   icon: Icons.percent,
-                                  isItPhishing: homeViewModel.isItPhishing,),
+                                  isItPhishing: homeViewModel.isItPhishing,
+                                ),
                                 CustomCard(
                                   currentLang: currentLang,
-                                  label: localization.langs[currentLang]['reason'],
+                                  label: localization.langs[currentLang]
+                                      ['reason'],
                                   text: homeViewModel.reason,
-                                  icon: Icons.question_mark, 
-                                  isItPhishing: homeViewModel.isItPhishing,),
-                  
-                                  
+                                  icon: Icons.question_mark,
+                                  isItPhishing: homeViewModel.isItPhishing,
+                                ),
                               ],
                             )),
                       ),
-                      const SizedBox(height: 10,),
+                      const SizedBox(
+                        height: 10,
+                      ),
                       const AdBannerWidget()
                     ],
                   ),
@@ -247,13 +278,14 @@ class _HomeViewState extends State<HomeView> {
 }
 
 class CustomCard extends StatelessWidget {
-   CustomCard({
-    super.key, 
-    required this.currentLang, 
+  CustomCard({
+    super.key,
+    required this.currentLang,
     required this.label,
     required this.text,
-    required this.icon, required this.isItPhishing,
-    });
+    required this.icon,
+    required this.isItPhishing,
+  });
 
   final HomeViewModel homeViewModel = HomeViewModel();
   final String currentLang;
@@ -271,7 +303,7 @@ class CustomCard extends StatelessWidget {
           size: 35,
         ),
         title: Text(
-          label ,
+          label,
           style: const TextStyle(
               fontSize: 24, color: Colors.blue, fontWeight: FontWeight.bold),
         ),

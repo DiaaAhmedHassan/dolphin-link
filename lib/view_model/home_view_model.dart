@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dolphin_link/localization.dart';
 import 'package:dolphin_link/model/groq_api_client.dart';
+import 'package:dolphin_link/view/scanner_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,7 +28,10 @@ class HomeViewModel{
 
   static Map<String, String> supportedLanguage = {
     'english': 'english',
-    'العربية': 'arabic'
+    'العربية': 'arabic',
+    '中文': 'chinese',
+    'हिन्दी': 'hindi',
+
   };
   GlobalKey<FormState> homeKey = GlobalKey();
 
@@ -71,17 +75,15 @@ class HomeViewModel{
     debugPrint(escapedUrl);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     currentLang = prefs.getString('lang')??'english';
-    bool appInArabic = currentLang == 'العربية';
-
     String translationPrompt = dotenv.env['translation_prompt']!;
-    String sentText = !appInArabic?escapedUrl:'$translationPrompt ${supportedLanguage[currentLang]} ${dotenv.env['phishing_prompt']} $escapedUrl';
+    String sentText = '$translationPrompt ${supportedLanguage[currentLang]} ${dotenv.env['phishing_prompt']} $escapedUrl';
     debugPrint("Sent text: $sentText");
     final response = await groqApiClient.chatCompletions(sentText).timeout(const Duration(seconds: 15), 
     onTimeout: ()=>throw Exception("Time out: Server didn't respond in time. "));
     if(response.statusCode != 200){
       if(context.mounted){
       ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error happened while getting the response"), duration: Duration(milliseconds: 500),));}
+      const SnackBar(content: Text("Error happened while getting the response"), duration: Duration(seconds: 2),));}
     }
     var body = response.body;
 
@@ -147,6 +149,11 @@ static Future<void> getCurrentLang() async{
   }
 }
 
+
+void scanQr(BuildContext context, HomeViewModel homeViewModel){
+ Navigator.push(context, MaterialPageRoute(builder: (_) => const ScannerView()));
+
+}
 
 
 }

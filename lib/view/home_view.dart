@@ -1,10 +1,12 @@
-import 'package:dolphin_link/ads_service/ad_banner.dart';
+import 'package:dolphin_link/services/ads_service/ad_banner.dart';
 import 'package:dolphin_link/localization.dart';
 import 'package:dolphin_link/view_model/home_view_model.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  const HomeView( {super.key, this.url});
+
+  final String? url;
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -21,6 +23,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    homeViewModel.urlController.text = widget.url??"";
   }
 
   @override
@@ -36,7 +39,7 @@ class _HomeViewState extends State<HomeView> {
               color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30),
           actions: [
             IconButton(
-                onPressed: () {},
+                onPressed: () => homeViewModel.scanQr(context, homeViewModel),
                 icon: const Icon(
                   Icons.qr_code,
                   size: 30,

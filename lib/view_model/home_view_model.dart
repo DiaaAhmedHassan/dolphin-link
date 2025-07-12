@@ -119,10 +119,12 @@ Future<bool> isConnectedToInternet()async{
 static Future<void> changeLang(String val)async{
   // currentLang = val;
 
+  currentLang = val;
   debugPrint('changed to: $currentLang');
   try{
   final prefs = await SharedPreferences.getInstance();
   prefs.setString('lang', val);
+  getCurrentLang();
   }catch (e){
     debugPrint("Error saving the language");
   }

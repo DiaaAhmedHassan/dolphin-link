@@ -30,8 +30,6 @@ class HomeViewModel{
     'english': 'english',
     'العربية': 'arabic',
     '中文': 'chinese',
-    'हिन्दी': 'hindi',
-
   };
   GlobalKey<FormState> homeKey = GlobalKey();
 
